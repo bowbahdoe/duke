@@ -24,14 +24,21 @@
             </p>
         </div>
 
-        <div id="controls" style="display: none; width: 100%">
-            <div style="display: flex; flex-direction: row; width: 100%">
+        <div id="controls" style="display: none">
+            <div style="display: flex; flex-direction: row; width: 100%; align-items: center; justify-self: center; justify-content: center">
                 <button id="back"  style="align-self: flex-start">←</button>
 
                 <button id="generate-button" style="align-self: center" onclick="generate()">Generate</button>
                 <button id="forwards"  style="align-self: flex-end">→</button>
             </div>
+
+
+            <div style="display: flex; flex-direction: row; width: 100%; margin-top: 5px; align-items: flex-start; justify-self: center; justify-content: center">
+                <label for="seed">Seed: </label>
+                <input id="seed" type="text" >
+            </div>
         </div>
+
 
         <div id="history" style="padding: 20px">
 
@@ -43,7 +50,7 @@
 
 <script type="module">
     await cheerpjInit({version: 17});
-    const lib = await cheerpjRunLibrary("/app/duke-2025.11.09-uber.jar");
+    const lib = await cheerpjRunLibrary("/app/target/duke-2025.11.09-uber.jar");
     const Duke = await lib.dev.mccue.duke.Duke;
     const ImageIO = await lib.javax.imageio.ImageIO;
     const ByteArrayOutputStream = await lib.java.io.ByteArrayOutputStream;
@@ -80,7 +87,15 @@
     }
 
     export async function generate() {
-        const duke = await new Duke();
+        let seed = document.getElementById("seed").value;
+
+        let duke;
+        if (seed === '') {
+            duke = await new Duke();
+        }
+        else {
+            duke = await Duke.from(seed);
+        }
         dukes.push(duke)
         idx = dukes.length - 1;
 
@@ -131,7 +146,7 @@
     document.getElementById("forwards").onclick = forward;
     document.getElementById("generate-button").onclick = generate;
 
-    document.getElementById("controls").style = ''
+    document.getElementById("controls").style = 'width: 260px; display: flex; flex-direction: column'
     document.getElementById("loading").style = 'display: none'
 </script>
 </body>
