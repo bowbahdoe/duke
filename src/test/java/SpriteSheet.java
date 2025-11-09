@@ -38,6 +38,8 @@ public class SpriteSheet {
 
         }
 
+        ImageIO.w
+
         sb.append("""
                   </body>
                 </html>
@@ -46,6 +48,5 @@ public class SpriteSheet {
                 Path.of("demo/index.html"),
                 sb.toString()
         );
-
     }
 }

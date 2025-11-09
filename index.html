@@ -1,0 +1,138 @@
+<html>
+<head>
+
+    <script src="https://cjrtnc.leaningtech.com/4.2/loader.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="duke-generator" style="display: flex; flex-direction: column; align-items: center">
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%">
+
+        <h1>Java Mascot Generator</h1>
+        <p>Powered by <a href="https://cheerpj.com/">CheerpJ</a></p>
+
+        <div id="duke" style="width: 260px; height: 260px; border-color: black; border-width: 2px; padding: 15px">
+            <p id="loading">
+                Loading...
+            </p>
+        </div>
+
+        <div id="controls" style="display: none; width: 100%">
+            <div style="display: flex; flex-direction: row; width: 100%">
+                <button id="back"  style="align-self: flex-start">←</button>
+
+                <button id="generate-button" style="align-self: center" onclick="generate()">Generate</button>
+                <button id="forwards"  style="align-self: flex-end">→</button>
+            </div>
+        </div>
+
+        <div id="history" style="padding: 20px">
+
+        </div>
+    </div>
+</div>
+
+
+
+<script type="module">
+    await cheerpjInit({version: 17});
+    const lib = await cheerpjRunLibrary("/app/target/duke-2025.11.09-uber.jar");
+    const Duke = await lib.dev.mccue.duke.Duke;
+    const ImageIO = await lib.javax.imageio.ImageIO;
+    const ByteArrayOutputStream = await lib.java.io.ByteArrayOutputStream;
+    const Base64 = await lib.java.util.Base64;
+
+    let dukes = []
+    let idx = 0;
+
+    export async function display() {
+        const duke = dukes[idx];
+        const image = await duke.toBufferedImage_256x256();
+
+        const baos = await new ByteArrayOutputStream();
+        await ImageIO.write(image, "png", baos);
+
+        const b64 = await (await Base64.getEncoder()).encodeToString(
+            await baos.toByteArray()
+        );
+
+        // <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" />
+
+        const img = document.createElement("img");
+        img.src = "data:image/png;base64, " + b64;
+        img.width = 256;
+        img.height = 256;
+        document.getElementById("duke").innerHTML = '';
+        document.getElementById("duke").appendChild(img);
+    }
+
+
+    export async function setIndex(index) {
+        idx = index;
+        display();
+    }
+
+    export async function generate() {
+        const duke = await new Duke();
+        dukes.push(duke)
+        idx = dukes.length - 1;
+
+
+        const image = await duke.toBufferedImage_32x32();
+
+        const baos = await new ByteArrayOutputStream();
+        await ImageIO.write(image, "png", baos);
+
+        const b64 = await (await Base64.getEncoder()).encodeToString(
+            await baos.toByteArray()
+        );
+
+        const img = document.createElement("img");
+        img.src = "data:image/png;base64, " + b64;
+        img.width = 32;
+        img.height = 32;
+        const i = idx;
+        img.onclick = () => {
+            setIndex(i);
+        }
+        document.getElementById("history").appendChild(img);
+        display();
+    }
+
+
+    export async function back() {
+        if (idx === 0) {
+            return;
+        }
+
+        idx -= 1;
+        display();
+    }
+
+    export async function forward() {
+        if (idx === dukes.length - 1) {
+            return;
+        }
+
+        idx += 1;
+        display();
+    }
+
+    console.info("Loaded")
+
+    document.getElementById("back").onclick = back;
+    document.getElementById("forwards").onclick = forward;
+    document.getElementById("generate-button").onclick = generate;
+
+    document.getElementById("controls").style = ''
+    document.getElementById("loading").style = 'display: none'
+</script>
+</body>
+</html>

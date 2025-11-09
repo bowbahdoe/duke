@@ -1,12 +1,15 @@
 package dev.mccue.duke;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
+
 import dev.mccue.imgscalr.Scalr;
 
 import dev.mccue.guava.hash.Hashing;
@@ -62,6 +65,10 @@ public final class Duke {
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
         }
+    }
+
+    public long getSeed() {
+        return seed;
     }
 
     // https://stackoverflow.com/questions/6409652/random-weighted-selection-in-java
@@ -281,6 +288,47 @@ public final class Duke {
                 }
             }
         }
+    }
+
+    public static void main(String[] args) {
+        var frame = new JFrame();
+
+        var panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+
+
+        var dukeRef = new AtomicReference<BufferedImage>(null);
+
+        class ImagePanel extends JPanel{
+            ImagePanel() {
+                setSize(new Dimension(260, 260));
+            }
+            public void paintComponent(Graphics g){
+                super.paintComponent(g);
+                var duke = dukeRef.get();
+                g.drawRoundRect(0, 0, 260, 260, 2, 2);
+                if (duke != null) {
+                    g.drawImage(duke, 0, 0, this);
+                }
+            }
+        }
+        var imagePanel = new ImagePanel();
+        panel.add(imagePanel);
+
+
+        panel.add(Box.createRigidArea(new Dimension(0,5)));
+
+        var button = new JButton();
+        button.setText("Random");
+        button.addActionListener(a -> {
+            dukeRef.set(new Duke().toBufferedImage_256x256());
+            SwingUtilities.invokeLater(imagePanel::repaint);
+        });
+        panel.add(button);
+
+        frame.add(panel);
+        frame.setSize(new Dimension(500, 500));
+        frame.setVisible(true);
     }
 
 
