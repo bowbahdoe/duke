@@ -34,7 +34,7 @@ public class SpriteSheet {
                     new File("demo/out-" + i + ".png")
             );
 
-            sb.append("<img width=\"256px\" height=\"256px\" src=/out-" + i + ".png />");
+            sb.append("<img width=\"32px\" height=\"32px\" src=/out-" + i + ".png />");
 
         }
 
