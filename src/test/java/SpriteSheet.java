@@ -43,7 +43,7 @@ public class SpriteSheet {
                 </html>
                 """);
         Files.writeString(
-                Path.of("demo/test.html"),
+                Path.of("demo/index.html"),
                 sb.toString()
         );
 
