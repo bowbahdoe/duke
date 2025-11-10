@@ -32,6 +32,10 @@
                 <button id="forwards"  style="align-self: flex-end">→</button>
             </div>
 
+            <div style="display: flex; flex-direction: row; width: 100%; margin-top: 5px; align-items: flex-start; justify-self: center; justify-content: center">
+                <label for="clojure-mode" style="align-self: center">Clojure Mode: </label>
+                <input id="clojure-mode" type="checkbox" >
+            </div>
 
             <div style="display: flex; flex-direction: row; width: 100%; margin-top: 5px; align-items: flex-start; justify-self: center; justify-content: center">
                 <label for="seed" style="align-self: center">Seed: </label>
@@ -87,14 +91,15 @@
     }
 
     export async function generate() {
+        const clojureMode = document.getElementById("clojure-mode").checked;
         let seed = document.getElementById("seed").value;
 
         let duke;
         if (seed === '') {
-            duke = await new Duke();
+            duke = await new Duke(clojureMode);
         }
         else {
-            duke = await Duke.from(seed);
+            duke = await Duke.from(seed, clojureMode);
         }
         dukes.push(duke)
         idx = dukes.length - 1;

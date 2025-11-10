@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicReference;
 
 import dev.mccue.imgscalr.Scalr;
 
@@ -18,6 +17,8 @@ public final class Duke {
     private static final List<BufferedImage> NOSES;
     private static final List<BufferedImage> HEADS;
     private static final List<BufferedImage> BODIES;
+
+    private static final List<BufferedImage> CLOJURE_NOSES;
 
     static {
         try {
@@ -43,6 +44,7 @@ public final class Duke {
                 ImageIO.write(head, "png", new File("head-" + i + ".png"));
             }
 
+
             for (int i = 0; i < noses.size(); i++) {
                 var nose = noses.get(i);
                 ImageIO.write(nose, "png", new File("nose-" + i + ".png"));
@@ -52,7 +54,7 @@ public final class Duke {
                 var body = bodies.get(i);
                 ImageIO.write(body, "png", new File("body-" + i + ".png"));
             }
-            */
+             */
 
             heads.forEach(Duke::clearRed);
             noses.forEach(Duke::clearRed);
@@ -61,6 +63,25 @@ public final class Duke {
             HEADS = heads;
             NOSES = noses;
             BODIES = bodies;
+
+
+            BufferedImage clojureSpriteSheet;
+            try (var is = Duke.class.getResourceAsStream("/dev/mccue/duke/clojure.png")) {
+                clojureSpriteSheet = ImageIO.read(Objects.requireNonNull(is));
+            }
+            List<BufferedImage> clojureNoses = new ArrayList<>();
+            for (int j = 0; j < 8; j++) {
+                for (int i = 0; i < 7; i++) {
+                    clojureNoses.add(clojureSpriteSheet.getSubimage(i * 32, j * 32, 32, 32));
+                }
+            }
+
+            clojureNoses.forEach(Duke::clearRed);
+            CLOJURE_NOSES = clojureNoses.subList(0, 55);
+
+            if (NOSES.size() != CLOJURE_NOSES.size()) {
+                throw new Exception("Expected normal and clojure colored noses to be same size");
+            }
 
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
@@ -98,24 +119,43 @@ public final class Duke {
         }
     }
 
+    private final boolean clojure;
     private final Long seed;
 
     public Duke(long seed) {
-        this.seed = seed;
+        this(seed, false);
     }
 
     public Duke() {
-        this.seed = ThreadLocalRandom.current().nextLong();
+        this(false);
     }
 
     public static Duke from(String text) {
-        return new Duke(Hashing.murmur3_128()
-                .hashString(text, StandardCharsets.UTF_8).asLong());
+        return from(text, false);
     }
 
     public static Duke from(String text, int rerolls) {
+        return from(text, rerolls, false);
+    }
+
+    public Duke(long seed, boolean clojure) {
+        this.clojure = clojure;
+        this.seed = seed;
+    }
+
+    public Duke(boolean clojure) {
+        this.clojure = clojure;
+        this.seed = ThreadLocalRandom.current().nextLong();
+    }
+
+    public static Duke from(String text, boolean clojure) {
         return new Duke(Hashing.murmur3_128()
-                .hashString(text + "##" + Integer.toHexString(rerolls), StandardCharsets.UTF_8).asLong());
+                .hashString(text, StandardCharsets.UTF_8).asLong(), clojure);
+    }
+
+    public static Duke from(String text, int rerolls, boolean clojure) {
+        return new Duke(Hashing.murmur3_128()
+                .hashString(text + "##" + Integer.toHexString(rerolls), StandardCharsets.UTF_8).asLong(), clojure);
     }
 
     private record Parts(
@@ -146,42 +186,11 @@ public final class Duke {
         colors.add(1, Color.DARK_GRAY);
         colors.add(1, Color.BLACK);
 
-        /* colors.add(1, new Color(154, 50, 15));
-        colors.add(1, new Color(103, 2, 2));
-        colors.add(1, new Color(145, 156, 7));
-        colors.add(1, new Color(154, 255, 33));
-        colors.add(1, new Color(0, 255, 141));
-        colors.add(1, new Color(94, 0, 255));
-        colors.add(1, new Color(218, 161, 255));
-        colors.add(1, new Color(223, 5, 162));
-        colors.add(1, new Color(255, 255, 255));
-        colors.add(1, new Color(96, 43, 94));
-        colors.add(1, new Color(9, 63, 115));
-        colors.add(1, new Color(143, 143, 143));
-        colors.add(1, new Color(90, 148, 172));
-        colors.add(1, new Color(255, 174, 149));
-        colors.add(1, new Color(221, 19, 19));
-        colors.add(1, new Color(168, 129, 182));
-        colors.add(1, new Color(255, 69, 7));
-        colors.add(1, new Color(147, 0, 109));
-        colors.add(1, new Color(255, 0, 131));
-        colors.add(1, new Color(0, 255, 45));
-        colors.add(1, new Color(19, 145, 0));
-        colors.add(1, new Color(11, 163, 151));
-        colors.add(1, new Color(255, 119, 67));
-        colors.add(1, new Color(0, 0, 0));
-        colors.add(1, new Color(69, 67, 67));
-        colors.add(1, new Color(17, 58, 57));
-        colors.add(1, new Color(172, 255, 138));
-        colors.add(1, new Color(124, 154, 15));
-        colors.add(1, new Color(154, 122, 15));
-        colors.add(1, new Color(80, 86, 115)); */
-
         var color = colors.next();
 
         return new Parts(
                 BODIES.get(random.nextInt(0, BODIES.size())),
-                NOSES.get(random.nextInt(0, NOSES.size())),
+                (clojure ? CLOJURE_NOSES : NOSES).get(random.nextInt(0, NOSES.size())),
                 HEADS.get(random.nextInt(0, HEADS.size())),
                 color
         );
@@ -290,46 +299,24 @@ public final class Duke {
         }
     }
 
+    /*
+    Find duke seed
+     */
+    /*
     public static void main(String[] args) {
-        var frame = new JFrame();
+        for (int i = 0; i < 10000000; i++) {
+            String seed = "duke" + i;
+            var duke = Duke.from(seed);
+            var parts = duke.pickParts();
 
-        var panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-
-
-        var dukeRef = new AtomicReference<BufferedImage>(null);
-
-        class ImagePanel extends JPanel{
-            ImagePanel() {
-                setSize(new Dimension(260, 260));
+            if (parts.noseColor.equals(Color.RED)
+                && parts.body.equals(BODIES.get(105))
+                && parts.nose.equals(NOSES.get(46))
+                && parts.head.equals(HEADS.get(77))) {
+                System.out.println(seed);
             }
-            public void paintComponent(Graphics g){
-                super.paintComponent(g);
-                var duke = dukeRef.get();
-                g.drawRoundRect(0, 0, 260, 260, 2, 2);
-                if (duke != null) {
-                    g.drawImage(duke, 0, 0, this);
-                }
-            }
+
         }
-        var imagePanel = new ImagePanel();
-        panel.add(imagePanel);
-
-
-        panel.add(Box.createRigidArea(new Dimension(0,5)));
-
-        var button = new JButton();
-        button.setText("Random");
-        button.addActionListener(a -> {
-            dukeRef.set(new Duke().toBufferedImage_256x256());
-            SwingUtilities.invokeLater(imagePanel::repaint);
-        });
-        panel.add(button);
-
-        frame.add(panel);
-        frame.setSize(new Dimension(500, 500));
-        frame.setVisible(true);
     }
-
-
+     */
 }

@@ -3,6 +3,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import java.io.File;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
@@ -25,7 +26,7 @@ public class SpriteSheet {
 
         var r = new Random(0);
         for (int i = 0; i < 10000; i++) {
-            var duke = new Duke(r.nextLong());
+            var duke = new Duke(r.nextLong(), false);
             var img = duke.toBufferedImage_256x256();
 
             ImageIO.write(
@@ -38,8 +39,6 @@ public class SpriteSheet {
 
         }
 
-        ImageIO.w
-
         sb.append("""
                   </body>
                 </html>
@@ -48,5 +47,15 @@ public class SpriteSheet {
                 Path.of("demo/index.html"),
                 sb.toString()
         );
+    }
+
+    @Test
+    public void findDuke() {
+        for (int i = 0; i < 100000; i++) {
+            String seed = "duke" + i;
+            var duke = Duke.from(seed);
+
+
+        }
     }
 }
