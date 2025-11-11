@@ -1,4 +1,5 @@
 import dev.mccue.duke.Duke;
+import dev.mccue.duke.Seed;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
@@ -26,7 +27,7 @@ public class SpriteSheet {
 
         var r = new Random(0);
         for (int i = 0; i < 10000; i++) {
-            var duke = new Duke(r.nextLong(), false);
+            var duke = new Duke(new Seed(r.nextLong()), false);
             var img = duke.toBufferedImage_256x256();
 
             ImageIO.write(

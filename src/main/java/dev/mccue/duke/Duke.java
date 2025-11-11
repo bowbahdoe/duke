@@ -88,8 +88,8 @@ public final class Duke {
         }
     }
 
-    public long getSeed() {
-        return seed;
+    public Seed getSeed() {
+        return new Seed(seed);
     }
 
     // https://stackoverflow.com/questions/6409652/random-weighted-selection-in-java
@@ -122,6 +122,7 @@ public final class Duke {
     private final boolean clojure;
     private final Long seed;
 
+
     public Duke(long seed) {
         this(seed, false);
     }
@@ -141,6 +142,14 @@ public final class Duke {
     public Duke(long seed, boolean clojure) {
         this.clojure = clojure;
         this.seed = seed;
+    }
+
+    public Duke(Seed seed) {
+        this(seed.value());
+    }
+
+    public Duke(Seed seed, boolean clojure) {
+        this(seed.value(), clojure);
     }
 
     public Duke(boolean clojure) {

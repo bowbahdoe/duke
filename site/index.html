@@ -41,6 +41,9 @@
                 <label for="seed" style="align-self: center">Seed: </label>
                 <input id="seed" type="text" >
             </div>
+            <div style="display: flex; flex-direction: row; width: 100%; align-items: center; justify-self: center; justify-content: center">
+                <p id="seed-display"></p>
+            </div>
         </div>
 
 
@@ -56,6 +59,7 @@
     await cheerpjInit({version: 17});
     const lib = await cheerpjRunLibrary("/app/duke-2025.11.09-uber.jar");
     const Duke = await lib.dev.mccue.duke.Duke;
+    const Seed = await lib.dev.mccue.duke.Seed;
     const ImageIO = await lib.javax.imageio.ImageIO;
     const ByteArrayOutputStream = await lib.java.io.ByteArrayOutputStream;
     const Base64 = await lib.java.util.Base64;
@@ -82,6 +86,7 @@
         img.height = 256;
         document.getElementById("duke").innerHTML = '';
         document.getElementById("duke").appendChild(img);
+        document.getElementById("seed-display").innerHTML = '' + (await (await duke.getSeed()).toString());
     }
 
 
@@ -99,7 +104,13 @@
             duke = await new Duke(clojureMode);
         }
         else {
-            duke = await Duke.from(seed, clojureMode);
+            const seedParsed = await Seed.tryParse(seed);
+            if (await seedParsed.isPresent()) {
+                duke = await new Duke(await seedParsed.get(), clojureMode);
+            }
+            else {
+                duke = await Duke.from(seed, clojureMode);
+            }
         }
         dukes.push(duke)
         idx = dukes.length - 1;
